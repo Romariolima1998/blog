@@ -1,0 +1,14 @@
+para subir o container
+docker-compose up --build
+
+para recriar o container
+docker-compose up --build --force-recreate
+
+para fazer comandos num container
+docker-compose run --rm nome_app comandos
+
+ex
+docker-compose run --rm djangoapp python manage.py makemigrations
+
+para entrar no container
+docker exec -it djangoapp /bin/sh
