@@ -1,4 +1,3 @@
-from typing import Iterable
 from django.db import models
 from utils.models_validators import validate_png
 from utils.redimencionamento import resize_image
@@ -32,7 +31,7 @@ class SiteSetup(models.Model):
     title = models.CharField(max_length=65)
     description = models.CharField(max_length=255)
     show_header = models.BooleanField(default=True)
-    show_searh = models.BooleanField(default=True)
+    show_search = models.BooleanField(default=True)
     show_menu = models.BooleanField(default=True)
     show_description = models.BooleanField(default=True)
     show_pagination = models.BooleanField(default=True)
