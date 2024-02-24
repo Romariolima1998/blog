@@ -9,6 +9,11 @@ from utils.redimencionamento import resize_image
 from utils.rands import slugify_new
 
 
+class PostManager(models.Manager):
+    def get_published(self):
+        return self.filter(is_published=True).order_by('-pk')
+
+
 class PostAttachment(AbstractAttachment):
     def save(self, *args, **kwargs):
         if not self.name:
@@ -84,6 +89,8 @@ class Page(models.Model):
 
 
 class Post(models.Model):
+    objects = PostManager()
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(
         unique=True, default=None,
