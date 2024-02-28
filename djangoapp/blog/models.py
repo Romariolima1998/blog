@@ -68,6 +68,8 @@ class Category(models.Model):
 
 
 class Page(models.Model):
+    objects = PostManager()
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(
         unique=True, default=None,
@@ -79,6 +81,11 @@ class Page(models.Model):
         null=True
         )
     content = models.TextField(null=False)
+
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:page', args=(self.slug,))
 
     def save(self, *args, **kwargs):
         if not self.slug:

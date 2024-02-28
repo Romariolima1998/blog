@@ -32,7 +32,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Page)
-class PageAdmin(admin.ModelAdmin):
+class PageAdmin(SummernoteModelAdmin):
+    summernote_fields = ('content',)
     list_display = 'id', 'title', 'slug'
     list_display_links = 'title',
     search_fields = 'id', 'title', 'slug'
@@ -53,7 +54,10 @@ class PostAdmin(SummernoteModelAdmin):
     list_editable = 'is_published',
     summernote_fields = ('content',)
     ordering = "-id",
-    readonly_fields = 'created_at', 'updated_at', 'created_by', 'updated_by', 'link'
+    readonly_fields = (
+        'created_at', 'updated_at',
+        'created_by', 'updated_by', 'link'
+        )
     prepopulated_fields = {
         'slug': ('title',),
     }
