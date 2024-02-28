@@ -5,7 +5,7 @@ from blog.models import Post, Page
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.http import Http404
+from django.http import Http404, HttpRequest, HttpResponse
 from django.views.generic.list import ListView
 
 # Create your views here.
@@ -30,6 +30,47 @@ class PostListView(ListView):
         return context
 
 
+class CreatedByListView(PostListView):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._temp_context = {}
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        qs = qs.filter(created_by__pk=self._temp_context['author_pk'])
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self._temp_context['user']
+
+        user_full_name = user.username
+        if user.first_name:
+            user_full_name = f'{user.first_name} {user.last_name}'
+        title = f'{user_full_name} post - '
+        ctx.update({
+            'title': title
+        })
+        return ctx
+    
+    def get(
+            self, request: HttpRequest,
+            *args: Any, **kwargs: Any
+            ) -> HttpResponse:
+        id = self.kwargs.get('id')
+        user = User.objects.filter(pk=id).first()
+        if user is None:
+            raise Http404()
+        
+        self._temp_context.update({
+            'author_pk': id,
+            'user': user
+        })
+        
+        return super().get(request, *args, **kwargs)
+    
+
+
 def created_by(request, id):
     user = User.objects.filter(pk=id).first()
     if user is None:
@@ -37,6 +78,7 @@ def created_by(request, id):
     user_full_name = user.username
     if user.first_name:
         user_full_name = f'{user.first_name} {user.last_name}'
+    
 
     posts = Post.objects.get_published().filter(created_by__pk=id)
 
