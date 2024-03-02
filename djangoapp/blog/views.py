@@ -1,5 +1,5 @@
 from typing import Any
-from django.db.models.query import QuerySet
+from django.db.models.query import QuerySet 
 from django.shortcuts import redirect
 from blog.models import Post, Page
 from django.db.models import Q
@@ -30,11 +30,11 @@ class PostListView(ListView):
 
 
 class CreatedByListView(PostListView):
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._temp_context = {}
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.filter(created_by__pk=self._temp_context['author_pk'])
         return qs
@@ -52,10 +52,7 @@ class CreatedByListView(PostListView):
         })
         return ctx
 
-    def get(
-            self, request: HttpRequest,
-            *args: Any, **kwargs: Any
-            ) -> HttpResponse:
+    def get(self, request, *args, **kwargs):
 
         id = self.kwargs.get('id')
         user = User.objects.filter(pk=id).first()
@@ -66,7 +63,7 @@ class CreatedByListView(PostListView):
             'author_pk': id,
             'user': user
         })
-   
+
         return super().get(request, *args, **kwargs)
 
 
@@ -74,7 +71,7 @@ class CategoryListView(PostListView):
     # se False levanta um erro 404 se a pesquisa for vasia
     allow_empty = False
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         return super().get_queryset().filter(
             category__slug=self.kwargs.get('slug')
         )
@@ -86,13 +83,13 @@ class CategoryListView(PostListView):
             'title': title
         })
         return ctx
-    
+
 
 class TagListView(PostListView):
     # se False levanta um erro 404 se a pesquisa for vasia
     allow_empty = False
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         return super().get_queryset().filter(
             tags__slug=self.kwargs.get('slug')
         )
@@ -108,7 +105,7 @@ class TagListView(PostListView):
 
 
 class SearchListView(PostListView):
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._search_value = ''
 
@@ -130,8 +127,8 @@ class SearchListView(PostListView):
             'search_value': self._search_value  
         })
         return ctx
-    
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+
+    def get(self, request: HttpRequest, *args, **kwargs):
         if self._search_value == '':
             redirect('blog:index')
         return super().get(request, *args, **kwargs)
@@ -143,7 +140,7 @@ class PageDetailView(DetailView):
     template_name = 'blog/pages/page.html'
     context_object_name = 'page'
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         page = self.get_object()
         title = f'{page.title} - '
@@ -152,7 +149,7 @@ class PageDetailView(DetailView):
         })
         return ctx
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         return super().get_queryset().filter(is_published=True)
 
 
@@ -162,7 +159,7 @@ class PostDetailView(DetailView):
     template_name = 'blog/pages/post.html'
     context_object_name = 'post'
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         post = self.get_object()
         title = f'{post.title} - '
@@ -171,5 +168,5 @@ class PostDetailView(DetailView):
         })
         return ctx
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         return super().get_queryset().filter(is_published=True)
