@@ -1,12 +1,12 @@
 from typing import Any
 from django.db.models.query import QuerySet
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from blog.models import Post, Page
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.http import Http404, HttpRequest, HttpResponse
-from django.views.generic.list import ListView
+from django.views.generic import ListView, DetailView
 
 # Create your views here.
 
@@ -52,111 +52,109 @@ class CreatedByListView(PostListView):
             'title': title
         })
         return ctx
-    
+
     def get(
             self, request: HttpRequest,
             *args: Any, **kwargs: Any
             ) -> HttpResponse:
+
         id = self.kwargs.get('id')
         user = User.objects.filter(pk=id).first()
         if user is None:
             raise Http404()
-        
+
         self._temp_context.update({
             'author_pk': id,
             'user': user
         })
-        
+   
         return super().get(request, *args, **kwargs)
+
+
+class CategoryListView(PostListView):
+    # se False levanta um erro 404 se a pesquisa for vasia
+    allow_empty = False
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(
+            category__slug=self.kwargs.get('slug')
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        title = f'{self.object_list[0].category.name} - '
+        ctx.update({
+            'title': title
+        })
+        return ctx
     
 
+class TagListView(PostListView):
+    # se False levanta um erro 404 se a pesquisa for vasia
+    allow_empty = False
 
-def created_by(request, id):
-    user = User.objects.filter(pk=id).first()
-    if user is None:
-        raise Http404()
-    user_full_name = user.username
-    if user.first_name:
-        user_full_name = f'{user.first_name} {user.last_name}'
-    
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(
+            tags__slug=self.kwargs.get('slug')
+        )
 
-    posts = Post.objects.get_published().filter(created_by__pk=id)
-
-    paginator = Paginator(posts, 9)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': page_obj,
-            'title': f'{user_full_name} post - '
-        }
-    )
-
-
-def category(request, slug):
-    posts = Post.objects.get_published().filter(category__slug=slug)
-
-    paginator = Paginator(posts, 9)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    if len(page_obj) == 0:
-        raise Http404()
-    title = f'{page_obj[0].category.name} - '
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': page_obj,
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        slug = self.kwargs.get("slug")
+        title = f'{self.object_list[0].tags.filter(slug=slug).first()} - '
+        ctx.update({
             'title': title
-        }
-    )
+        })
+        return ctx
 
 
-def tag(request, slug):
-    posts = Post.objects.get_published().filter(tags__slug=slug)
+class SearchListView(PostListView):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._search_value = ''
 
-    paginator = Paginator(posts, 9)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    def setup(self, request: HttpRequest, *args: Any, **kwargs: Any) -> None:
+        self._search_value = request.GET.get('search','').strip()
+        return super().setup(request, *args, **kwargs)
 
-    if len(page_obj) == 0:
-        raise Http404()
-    title = f'{page_obj[0].tags.filter(slug=slug).first()} - '
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': page_obj,
-            'title': title
-        }
-    )
-
-
-def search(request):
-    search_value = request.GET.get('search', '').strip()
-    posts = (
-        Post.objects.get_published()
-        .filter(
-            Q(title__icontains=search_value) |
-            Q(exerpt__icontains=search_value) |
-            Q(content__icontains=search_value) 
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            Q(title__icontains=self._search_value) |
+            Q(exerpt__icontains=self._search_value) |
+            Q(content__icontains=self._search_value)
         )[:9]
-    )
 
-    title = f'{search_value[:30]} - '
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update({
+            'title': f'{self._search_value[:30]} - ',
+            'search_value': self._search_value  
+        })
+        return ctx
+    
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if self._search_value == '':
+            redirect('blog:index')
+        return super().get(request, *args, **kwargs)
 
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': posts,
-            'search_value': search_value,
+
+class PageDetailView(DetailView):
+    model = Page
+    slug_field = 'slug'
+    template_name = 'blog/pages/page.html'
+    context_object_name = 'page'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        page = self.get_object()
+        title = f'{page.title} - '
+        ctx.update({
             'title': title
-        }
-    )
+        })
+        return ctx
+    
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(is_published=True)
 
 
 def page(request, slug):
