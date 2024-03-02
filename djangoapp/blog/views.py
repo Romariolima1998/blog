@@ -1,10 +1,9 @@
-from typing import Any
-from django.db.models.query import QuerySet 
+
 from django.shortcuts import redirect
 from blog.models import Post, Page
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest
 from django.views.generic import ListView, DetailView
 
 # Create your views here.
@@ -109,7 +108,7 @@ class SearchListView(PostListView):
         super().__init__(**kwargs)
         self._search_value = ''
 
-    def setup(self, request: HttpRequest, *args: Any, **kwargs: Any) -> None:
+    def setup(self, request, *args, **kwargs) -> None:
         self._search_value = request.GET.get('search', '').strip()
         return super().setup(request, *args, **kwargs)
 
