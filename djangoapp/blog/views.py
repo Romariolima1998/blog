@@ -1,8 +1,7 @@
 from typing import Any
 from django.db.models.query import QuerySet
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from blog.models import Post, Page
-from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.http import Http404, HttpRequest, HttpResponse
@@ -114,7 +113,7 @@ class SearchListView(PostListView):
         self._search_value = ''
 
     def setup(self, request: HttpRequest, *args: Any, **kwargs: Any) -> None:
-        self._search_value = request.GET.get('search','').strip()
+        self._search_value = request.GET.get('search', '').strip()
         return super().setup(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -132,7 +131,7 @@ class SearchListView(PostListView):
         })
         return ctx
     
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self._search_value == '':
             redirect('blog:index')
         return super().get(request, *args, **kwargs)
@@ -152,41 +151,25 @@ class PageDetailView(DetailView):
             'title': title
         })
         return ctx
-    
+
     def get_queryset(self) -> QuerySet[Any]:
         return super().get_queryset().filter(is_published=True)
 
 
-def page(request, slug):
-    page_obj = Page.objects.get_published().filter(slug=slug).first()
+class PostDetailView(DetailView):
+    model = Post
+    slug_field = 'slug'
+    template_name = 'blog/pages/post.html'
+    context_object_name = 'post'
 
-    if page_obj is None:
-        raise Http404()
-
-    title = f'{page_obj.title} - '
-    return render(
-        request,
-        'blog/pages/page_obj.html',
-        {
-            'page': page_obj,
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        post = self.get_object()
+        title = f'{post.title} - '
+        ctx.update({
             'title': title
-        }
-    )
+        })
+        return ctx
 
-
-def post(request, slug):
-    post_obj = Post.objects.get_published().filter(slug=slug).first()
-
-    if post_obj is None:
-        raise Http404()
-
-    title = f'{post_obj.title} - '
-
-    return render(
-        request,
-        'blog/pages/post.html',
-        {
-            'post': post_obj,
-            'title': title
-        }
-    )
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(is_published=True)

@@ -12,3 +12,9 @@ docker-compose run --rm djangoapp python manage.py makemigrations
 
 para entrar no container
 docker exec -it djangoapp /bin/sh
+
+rebildar docker
+docker-compose up --build --remove-orphans --renew-anon-volumes --force-recreate
+
+para desbloquear tentativas de login axes
+python manage.py axes_reset

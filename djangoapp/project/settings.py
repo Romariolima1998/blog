@@ -15,9 +15,12 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR.parent / 'data' / 'web'
+load_dotenv(BASE_DIR.parent / 'dotenv_files' / '.env', override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,6 +49,7 @@ INSTALLED_APPS = [
     'blog',
     'site_setup',
     'django_summernote',
+    'axes'
 ]
 
 MIDDLEWARE = [
@@ -56,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -127,6 +132,13 @@ USE_L10N = True
 
 USE_TZ = True
 
+AUTHENTICATION_BACKENDS = [
+    # AxesStandaloneBackend should be the first backend in the AUTHENTICATION_BACKENDS list.
+    'axes.backends.AxesStandaloneBackend',
+
+    # Django ModelBackend is the default authentication backend.
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -166,6 +178,10 @@ SUMMERNOTE_CONFIG = {
         '//cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css',
     ),
     'attachment_filesize_limit': 30 * 1024 * 1024,
-    # 'attachment_model': 'blog.PostAttachment',
+    'attachment_model': 'blog.PostAttachment',
 }
 
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 6
+AXES_COOLOFF_TIME = 1
+AXES_RESET_ON_SUCCESS = True
