@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR.parent / 'data' / 'web'
-load_dotenv(BASE_DIR.parent / 'dotenv_files' / '.env', override=True)
+# load_dotenv(BASE_DIR.parent / 'dotenv_files' / '.env', override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,9 +32,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change-me')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
-ALLOWED_HOSTS = [ '34.16.199.42', '127.0.0.1', 'localhost'
-   # h.strip() for h in os.getenv('ALLOWED_HOTS', '').split(',') if h.strip()
-]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',
+                 # h.strip() for h in os.getenv('ALLOWED_HOTS', '').split(',') if h.strip()
+                 ]
 
 
 # Application definition

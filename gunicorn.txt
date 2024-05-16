@@ -37,7 +37,7 @@ Group=www-data
 Restart=on-failure
 # EnvironmentFile=/home/r1chuck/blogapp/.env
 WorkingDirectory=/home/r1chuck/blogapp
-# --error-logfile --enable-stdio-inheritance --log-level and --capture-output
+--error-logfile --enable-stdio-inheritance --log-level and --capture-output
 # are all for debugging purposes.
 ExecStart=/home/r1chuck/blogapp/venv/bin/gunicorn \
           --error-logfile /home/r1chuck/blogapp/gunicorn-error-log \
@@ -60,7 +60,6 @@ sudo systemctl enable blog.socket
 # Checando
 sudo systemctl status blog.socket
 curl --unix-socket /run/blog.socket localhost
-sudo systemctl status blog
 
 # Restarting
 sudo systemctl restart blog.service
