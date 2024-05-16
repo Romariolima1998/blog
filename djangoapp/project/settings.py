@@ -32,9 +32,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change-me')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost',
-                 h.strip() for h in os.getenv('ALLOWED_HOTS', '').split(',') if h.strip()
-                 ]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',] + [
+    h.strip() for h in os.getenv('ALLOWED_HOTS', '').split(',') if h.strip()
+]
 
 
 # Application definition
